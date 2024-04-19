@@ -6,6 +6,8 @@ from modules.register import *
 from modules.recruiter import *
 from modules.client import *
 from modules.creds import user_pwd
+from tkinter_uix.Entry import Entry
+
 
 def success(root, email1):
     global f
@@ -15,26 +17,26 @@ def success(root, email1):
     except:
         pass
 
-    s = f'select type from users where email="{email1}"'
+    s = f'select usertype from User where email="{email1}"'
     mycon = sql.connect(host='localhost', user='root',
-                        passwd=user_pwd, database='mydb')
+                        passwd=user_pwd, database='jobmagnet')
     cur = mycon.cursor()
     cur.execute(s)
     q = cur.fetchall()
     mycon.close()
     print(q)
 
-    if q[0][0] == "recruiter":
-        rec(root, email1)
+    if q[0][0] == "Emp":
+        emp(root, email1)
     else:
-        cli(root, email1)
+        jobseeker(root, email1)
 
 
 def submit(root):
     mycon = sql.connect(host='localhost', user='root',
-                        passwd=user_pwd, database='mydb')
+                        passwd=user_pwd, database='jobmagnet')
     cur = mycon.cursor()
-    cur.execute('select email,password from users')
+    cur.execute('select Email,Password from User')
     total = cur.fetchall()
     mycon.close()
     email1 = email.get()
