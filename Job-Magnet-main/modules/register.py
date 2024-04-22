@@ -22,19 +22,20 @@ def mai(root):
     img.place(x=0, y=0)
     
     r1.Img1 = PhotoImage(file="elements/recruiter_element.png")
-    recruit = Button(r1, image=r1.Img1, border=0, bg="#03DDEE",
-                     relief="raised", activebackground="#03EAFD", command=lambda: recruiter_regis(root))
-    recruit.place(x=140, y=340)
+    recruit = Button(r1, image=r1.Img1, border=0, bg="#333333", highlightbackground="#333333",
+                     relief="raised", activebackground="#03EAFD", command=lambda: recruiter_regis(root),highlightthickness=0)
+    recruit.place(x=100, y=300)
     
     r1.Img2 = PhotoImage(file="elements/client_element.png")
-    client_reg = Button(r1, image=r1.Img2, border=0, bg="#03DDEE",
+    client_reg = Button(r1, image=r1.Img2, border=0, bg="#333333",highlightthickness=0,highlightbackground="#333333",
                      relief="raised", activebackground="#03EAFD", command=lambda: client_regis(root))
-    client_reg.place(x=440, y=340)
+    client_reg.place(x=400, y=300)
     
     r1.bn = PhotoImage(file="elements\\backlogin.png")
-    btn = Button(r1, image=r1.bn, bg='#05e4f6',
+    btn = Button(r1, image=r1.bn, bg='#333333',highlightthickness=0, highlightbackground="#333333",
                  bd=0, activebackground="#05e4f6", command=lambda: logi(root))
-    btn.place(x=220, y=550)
+    btn.place(x=200, y=550)
+
 
 
 def recruiter_regis(root):
@@ -71,14 +72,15 @@ def recruiter_regis(root):
     cpwd.place(x=290, y=400)
 
     r2.bn = PhotoImage(file="elements\\next1.png")
-    btn = Button(r2, image=r2.bn, bg='#FFFFFF', bd=0,
+    btn = Button(r2, image=r2.bn, bg='#FFFFFF', bd=0, highlightthickness=0, highlightbackground="#333333",
                  activebackground="#ffffff", command=lambda: recruiter_check(root))
     btn.place(x=320, y=500)
 
     r2.back = PhotoImage(file="elements\\back.png")
-    btn2 = Button(r2, image=r2.back, bg='#FFFFFF', bd=0,
+    btn2 = Button(r2, image=r2.back, bg='#FFFFFF', bd=0, highlightthickness=0, highlightbackground="#333333",
                   activebackground="#ffffff", command=lambda: mai(root))
     btn2.place(x=120, y=500)
+
 
 def recruiter_check(root):
     global name1, email1, pwd1, cpwd1
@@ -152,9 +154,10 @@ def recruit_complete(root):
     website_url.place(x=290, y=450)
 
     r3.bn = PhotoImage(file="elements\\reg.png")
-    btn = Button(r3, image=r3.bn, bg='#FFFFFF', bd=0,
+    btn = Button(r3, image=r3.bn, bg='#FFFFFF', bd=0, highlightthickness=0, highlightbackground="#333333",
                  activebackground="#ffffff", command=lambda: recruiter_submit(root))
     btn.place(x=320, y=500)
+
 
 def recruiter_submit(root):
     global company1, loc1, company_size1, industry1, website_url1
@@ -228,12 +231,12 @@ def client_regis(root):
     cpwd.place(x=290, y=400)
 
     r2.bn = PhotoImage(file="elements\\next1.png")
-    btn = Button(r2, image=r2.bn, bg='#FFFFFF', bd=0,
+    btn = Button(r2, image=r2.bn, bg='#FFFFFF', bd=0, highlightthickness=0, highlightbackground="#333333",
                  activebackground="#ffffff", command=lambda: client_check(root))
     btn.place(x=320, y=500)
 
     r2.back = PhotoImage(file="elements\\back.png")
-    btn2 = Button(r2, image=r2.back, bg='#FFFFFF', bd=0,
+    btn2 = Button(r2, image=r2.back, bg='#FFFFFF', bd=0, highlightthickness=0, highlightbackground="#333333",
                   activebackground="#ffffff", command=lambda: mai(root))
     btn2.place(x=120, y=500)
 
@@ -305,7 +308,7 @@ def client_complete(root):
     education.place(x=290, y=400)
 
     r3.bn = PhotoImage(file="elements\\reg.png")
-    btn = Button(r3, image=r3.bn, bg='#FFFFFF', bd=0,
+    btn = Button(r3, image=r3.bn, bg='#FFFFFF', bd=0, highlightthickness=0, 
                  activebackground="#ffffff", command=lambda: client_submit(root))
     btn.place(x=320, y=500)
 

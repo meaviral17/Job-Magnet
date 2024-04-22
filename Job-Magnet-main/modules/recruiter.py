@@ -183,7 +183,7 @@ def create():
     desc.grid(row=2, column=1, pady=10, padx=10)
     req = Entry(tab, placeholder="Enter Job Requirements")
     req.grid(row=3, column=1, pady=10, padx=10)
-    close_date = Entry(tab, placeholder="Enter Closing Date")
+    close_date = Entry(tab, placeholder="Enter Closing Date(YYYY-MM-DD)")
     close_date.grid(row=4, column=1, pady=10, padx=10)
 
     btn = Button(tab, text="Submit", font=(20), bg="#45CE30",
@@ -314,40 +314,37 @@ def app():
 def emp(root, email1):
     global email
     email = email1
-    bg = Frame(root, width=1050, height=700, bg="black")
+    bg = Frame(root, width=1050, height=700, bg="#333333")
     bg.place(x=0, y=0)
 
     get_recruiter_details(email)
 
     # Navbar
-    nm = Label(root, text=f'{name}', font=(
-        'normal', 36, 'bold'), bg="#ffffff", fg="#0A3D62")
+    nm = Label(root, text=f'{name}', font=('normal', 36, 'bold'), bg="#333333", fg="#FFFFFF")
     nm.place(x=300, y=50)
-    cp = Label(root, text=f'{company}', font=(
-        'normal', 24), bg="#ffffff", fg="#0A3D62")
+    cp = Label(root, text=f'{company}',font=('normal', 36, 'bold'), bg="#333333", fg="#FFFFFF")
     cp.place(x=300, y=120)
-    bn = Button(root, text="LOGOUT", font=(
-        'normal', 20), bg="#b32e2e", fg="#ffffff", command=lambda: logi(root))
+    bn = Button(root, text="LOGOUT", font=('normal', 20), bg="#b32e2e", fg="#ffffff", command=lambda: logi(root))
     bn.place(x=800, y=75)
 
     # Left
-    lf = Frame(root, width=330, height=440, bg="#ffffff")
+    lf = Frame(root, width=330, height=440, bg="#333333")  # Set background color to grey
     lf.place(x=60, y=220)
-    cj = Button(lf, text="Post a Job", font=(
-        'normal', 20), bg="#b32e2e", fg="#ffffff", command=create)
-    cj.grid(row=0, column=0, padx=80, pady=40)
-    pj = Button(lf, text="Posted Jobs", font=(
-        'normal', 20), bg="#b32e2e", fg="#ffffff", command=posted)
-    pj.grid(row=1, column=0, padx=80, pady=40)
-    ap = Button(lf, text="Applications", font=(
-        'normal', 20), bg="#b32e2e", fg="#ffffff", command=app)
-    ap.grid(row=2, column=0, padx=80, pady=40)
+    cj = Button(lf, text="Post a Job", font=('normal', 20), bg="#b32e2e", fg="#ffffff", command=create)
+    cj.grid(row=0, column=0, padx=20, pady=20)  # Adjust padding
+    pj = Button(lf, text="Posted Jobs", font=('normal', 20), bg="#b32e2e", fg="#ffffff", command=posted)
+    pj.grid(row=1, column=0, padx=20, pady=20)  # Adjust padding
+    ap = Button(lf, text="Applications", font=('normal', 20), bg="#b32e2e", fg="#ffffff", command=app)
+    ap.grid(row=2, column=0, padx=20, pady=20)  # Adjust padding
 
     # Right
     global rt, tab, bgr
-    rt = Frame(root, width=540, height=420, bg="#ffffff")
+    rt = Frame(root, width=540, height=420, bg="#333333")  # Set background color to grey
     rt.place(x=450, y=220)
-    tab = Frame(root, bg="#FFFFFF")
+    tab = Frame(root, bg="#333333")  # Set background color to grey
     tab.place(x=460, y=300, width=520, height=350)
-    bgr = Frame(root, width=540, height=420, bg="black")
+     
+    bgrf = Frame(root, width=540, height=420)
+    bgrf.load = PhotoImage(file="elements\\bgr.png")
+    bgr = Label(root, image=bgrf.load, bg="#00b9ed")
     bgr.place(x=440, y=210)
