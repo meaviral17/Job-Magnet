@@ -14,6 +14,7 @@ Create_Employer_Table = """
 CREATE TABLE IF NOT EXISTS `jobmagnet`.`Employer` (
   `employer_id` INT NOT NULL AUTO_INCREMENT,
   `UserID` INT NOT NULL,
+  `Location` VARCHAR(45) NOT NULL,
   `company_name` VARCHAR(45) NOT NULL,
   `company_size` INT NOT NULL,
   `industry` VARCHAR(45) NOT NULL,

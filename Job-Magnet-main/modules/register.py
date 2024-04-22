@@ -175,7 +175,7 @@ def recruiter_submit(root):
             cur = mycon.cursor()
             cur.execute(exe)
             UserID = cur.lastrowid  # Get the last inserted UserID
-            exe1 = f'insert into Employer (UserID, company_name, company_size, industry, website_url) values({UserID}, "{company1}", {company_size1}, "{industry1}", "{website_url1}")'
+            exe1 = f'INSERT INTO Employer (UserID, company_name,location, company_size, industry, website_url) VALUES ({UserID}, "{company1}","{loc1}", {company_size1}, "{industry1}", "{website_url1}")'
             cur.execute(exe1)
             name.delete(0, END)
             email.delete(0, END)
