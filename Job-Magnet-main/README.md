@@ -1,6 +1,6 @@
   
 
-# # Job Magnet - Main
+# Job Magnet - Main
 
 ###  DBMS Mini-project: Recruitment Management System✨
 
