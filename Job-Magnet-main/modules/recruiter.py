@@ -8,7 +8,7 @@ from modules.creds import user_pwd
 import tkinter as tk
 from tkinter import simpledialog
 
-
+search_d = None 
 def get_recruiter_details(email):
     global recruiter_id, name, company
     query = f'''
@@ -78,20 +78,39 @@ def sort_all(table):
         for r in all_jobs:
             table.insert('', 'end', values=r)
 
-def sort_applicants(table):
+def sort_applicants(table, search_d):
+    criteria_mapping = {
+        "JobRole": "job.title",
+        "CName": "user.Username",
+        "CLocation": "jobseeker.Location"
+    }
+    
     criteria = search_d.get()
-    if(criteria == "Select"):
+    
+    if criteria == "Select" or criteria not in criteria_mapping:
         pass
     else:
         table.delete(*table.get_children())
         mycon = sql.connect(host='localhost', user='root', passwd=user_pwd, database='jobmagnet')
         cur = mycon.cursor()
-        cur.execute(f'SELECT job.title AS JobRole, jobseeker.Username, jobseeker.Email, jobseeker.Age, jobseeker.Location, jobseeker.Experience, jobseeker.Skills, jobseeker.Education FROM jobmagnet.Application AS app JOIN jobmagnet.Jobseeker AS jobseeker ON app.jobseeker_id = jobseeker.jobseeker_id JOIN jobmagnet.Job_Posting AS job ON job.job_id = app.job_id WHERE job.employer_id = {recruiter_id} ORDER BY {criteria};')
+        
+        # Dynamically construct the SQL query based on selected criteria
+        query = f'''
+            SELECT job.title AS JobRole, user.Username, user.Email, jobseeker.Location, jobseeker.Education, jobseeker.Skills, app.resume_file, app.application_status
+            FROM jobmagnet.Application AS app
+            JOIN jobmagnet.Jobseeker AS jobseeker ON app.jobseeker_id = jobseeker.jobseeker_id
+            JOIN jobmagnet.Job_Posting AS job ON job.job_id = app.job_id
+            JOIN jobmagnet.User AS user ON jobseeker.UserID = user.UserID
+            WHERE job.employer_id = {recruiter_id}
+            ORDER BY {criteria_mapping[criteria]};
+        '''
+        cur.execute(query)
         applicants = cur.fetchall()
         mycon.close()
 
         for x in applicants:
             table.insert('', 'end', values=x)
+
 
 # ----------------------------------------------Posted jobs Query-----------------------------------------------
 
@@ -130,7 +149,7 @@ def show_all(table):
 def show_applicants(table):
     mycon = sql.connect(host='localhost', user='root', passwd=user_pwd, database='jobmagnet')
     cur = mycon.cursor()
-    cur.execute(f'''SELECT job.title, user.Username, user.Email, jobseeker.Location, jobseeker.Education, jobseeker.Skills, app.resume_file, app.application_status, job.closing_date
+    cur.execute(f'''SELECT app.application_id, job.title AS JobRole, user.Username AS CName, user.Email AS CEmail, jobseeker.Location AS Location, jobseeker.Education AS CExp, jobseeker.Skills AS CSkills, app.resume_file AS CQualification, app.application_status AS Resume_File, job.closing_date
                     FROM jobmagnet.Application AS app
                     JOIN jobmagnet.Jobseeker AS jobseeker ON app.jobseeker_id = jobseeker.jobseeker_id
                     JOIN jobmagnet.Job_Posting AS job ON job.job_id = app.job_id
@@ -145,6 +164,8 @@ def show_applicants(table):
         x[-1] = format_closing_date(x[-1])
         table.insert('', 'end', values=x)
 
+
+
 def change_application_status(table):
     # Get the selected item
     selected_index = table.focus()
@@ -152,8 +173,8 @@ def change_application_status(table):
     
     # Check if an item is selected
     if selected_values:
-        application_id = selected_values[0] 
-        current_status = selected_values[-2]
+        application_id = selected_values[0]  # Extracting application_id from the first column
+        current_status = selected_values[-2]  # Assuming the application status is the second-to-last column
         if current_status != "Pending":
             messagebox.showinfo("Cannot Change Status", "The application status can only be changed if it's currently pending.")
             return
@@ -284,6 +305,7 @@ def posted():
     table.pack(fill="both", expand=1)
 
 def app():
+    global search_d 
     # Clear existing widgets
     for widget in rt.winfo_children():
         widget.destroy()
@@ -292,26 +314,27 @@ def app():
     bgr.destroy()
 
     # Create widgets for sorting
-    search_l = Label(rt, text="Order By : ", font=('normal', 18), bg="#ffffff")
-    search_l.grid(row=0, column=0, padx=10, pady=10)
+    search_l = Label(rt, text="Order By: ", font=('normal', 18), bg="#ffffff")
+    search_l.grid(row=0, column=0, padx=10, pady=0)  # Shifted to the left by 20 units
     
     search_d = ttk.Combobox(rt, width=12, font=('normal', 18), state='readonly')
     search_d['values'] = ('Select', 'JobRole', 'CName', 'CLocation')
     search_d.current(0)
-    search_d.grid(row=0, column=2, padx=10, pady=10)
+    search_d.grid(row=0, column=1, padx=10, pady=0)  # Adjusted column index
     
-    search = Button(rt, text="Sort", font=('normal', 12, 'bold'), bg="#00b9ed", fg="#ffffff", command=lambda: sort_applicants(table))
-    search.grid(row=0, column=3, padx=45, pady=10, ipadx=30)
+    search = Button(rt, text="Sort", font=('normal', 12, 'bold'), bg="#00b9ed", fg="#ffffff", command=lambda: sort_applicants(table, search_d))
+    search.grid(row=0, column=2, padx=0, pady=0, ipadx=0)
 
     # Create widgets for the table
     scx = Scrollbar(tab, orient="horizontal")
     scy = Scrollbar(tab, orient="vertical")
     
-    table = ttk.Treeview(tab, columns=('JobRole', 'CName', 'CEmail', 'Location', 'CExp', 'CSkills', 'CQualification', 'Resume File'),
+    table = ttk.Treeview(tab, columns=('ApplicationID', 'JobRole', 'CName', 'CEmail', 'Location', 'CExp', 'CSkills', 'CQualification', 'Resume File'),
                          xscrollcommand=scx.set, yscrollcommand=scy.set)
     scx.pack(side="bottom", fill="x")
     scy.pack(side="right", fill="y")
 
+    table.heading("ApplicationID", text="Application ID")
     table.heading("JobRole", text="Job Role")
     table.heading("CName", text='Applicants Name')
     table.heading("CEmail", text='Email')
@@ -325,6 +348,7 @@ def app():
     scx.config(command=table.xview)
     scy.config(command=table.yview)
 
+    table.column("ApplicationID", width=100)
     table.column("JobRole", width=150)
     table.column("CName", width=200)
     table.column("CEmail", width=100)
@@ -336,10 +360,11 @@ def app():
 
     # Create a Change Status button
     change_status_btn = Button(rt, text="Change Status", font=('normal', 12, 'bold'), bg="#00b9ed", fg="#ffffff", command=lambda: change_application_status(table))
-    change_status_btn.grid(row=0, column=4, padx=10, pady=10, ipadx=30)
-
+    change_status_btn.grid(row=0, column=3, padx=0, pady=0, ipadx=0, sticky="w")  # Adjusted column index and added sticky attribute
     show_applicants(table)
     table.pack(fill="both", expand=1)
+
+
 def askstatus():
     root = tk.Tk()
     root.withdraw()  
