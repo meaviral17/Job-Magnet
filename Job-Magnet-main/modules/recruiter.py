@@ -5,6 +5,9 @@ from tkinter_uix.Entry import Entry
 import mysql.connector as sql
 import modules.login as l
 from modules.creds import user_pwd
+import tkinter as tk
+from tkinter import simpledialog
+
 
 def get_recruiter_details(email):
     global recruiter_id, name, company
@@ -83,7 +86,7 @@ def sort_applicants(table):
         table.delete(*table.get_children())
         mycon = sql.connect(host='localhost', user='root', passwd=user_pwd, database='jobmagnet')
         cur = mycon.cursor()
-        cur.execute(f'SELECT job.JobRole, jobseeker.Username, jobseeker.Email, jobseeker.Age, jobseeker.Location, jobseeker.Experience, jobseeker.Skills, jobseeker.Education FROM jobmagnet.Application AS app JOIN jobmagnet.Jobseeker AS jobseeker ON app.jobseeker_id=jobseeker.jobseeker_id JOIN jobmagnet.Job_Posting AS job ON job.job_id=app.job_id WHERE job.employer_id={recruiter_id} ORDER BY {criteria}')
+        cur.execute(f'SELECT job.title AS JobRole, jobseeker.Username, jobseeker.Email, jobseeker.Age, jobseeker.Location, jobseeker.Experience, jobseeker.Skills, jobseeker.Education FROM jobmagnet.Application AS app JOIN jobmagnet.Jobseeker AS jobseeker ON app.jobseeker_id = jobseeker.jobseeker_id JOIN jobmagnet.Job_Posting AS job ON job.job_id = app.job_id WHERE job.employer_id = {recruiter_id} ORDER BY {criteria};')
         applicants = cur.fetchall()
         mycon.close()
 
@@ -127,7 +130,7 @@ def show_all(table):
 def show_applicants(table):
     mycon = sql.connect(host='localhost', user='root', passwd=user_pwd, database='jobmagnet')
     cur = mycon.cursor()
-    cur.execute(f'''SELECT job.title, user.Username, user.Email, jobseeker.Location, jobseeker.Education, jobseeker.Skills, app.resume_file, job.closing_date
+    cur.execute(f'''SELECT job.title, user.Username, user.Email, jobseeker.Location, jobseeker.Education, jobseeker.Skills, app.resume_file, app.application_status, job.closing_date
                     FROM jobmagnet.Application AS app
                     JOIN jobmagnet.Jobseeker AS jobseeker ON app.jobseeker_id = jobseeker.jobseeker_id
                     JOIN jobmagnet.Job_Posting AS job ON job.job_id = app.job_id
@@ -141,6 +144,31 @@ def show_applicants(table):
         x = list(x)
         x[-1] = format_closing_date(x[-1])
         table.insert('', 'end', values=x)
+
+def change_application_status(table):
+    # Get the selected item
+    selected_index = table.focus()
+    selected_values = table.item(selected_index, 'values')
+    
+    # Check if an item is selected
+    if selected_values:
+        application_id = selected_values[0] 
+        current_status = selected_values[-2]
+        if current_status != "Pending":
+            messagebox.showinfo("Cannot Change Status", "The application status can only be changed if it's currently pending.")
+            return
+        
+        new_status = askstatus()
+        if new_status not in ["Accepted", "Rejected"]:
+            messagebox.showinfo("Invalid Status", "Please enter a valid status (Accepted/Rejected).")
+            return
+        
+        if new_status:
+            update_application_status(application_id, new_status)
+            # Refresh the table
+            show_applicants(table)
+    else:
+        messagebox.showinfo("No Selection", "Please select an application to change its status.")
 
 def create():
     global role, loc, desc, req, close_date
@@ -256,25 +284,29 @@ def posted():
     table.pack(fill="both", expand=1)
 
 def app():
+    # Clear existing widgets
     for widget in rt.winfo_children():
         widget.destroy()
     for widget in tab.winfo_children():
         widget.destroy()
     bgr.destroy()
 
+    # Create widgets for sorting
     search_l = Label(rt, text="Order By : ", font=('normal', 18), bg="#ffffff")
     search_l.grid(row=0, column=0, padx=10, pady=10)
-    global search_d
+    
     search_d = ttk.Combobox(rt, width=12, font=('normal', 18), state='readonly')
     search_d['values'] = ('Select', 'JobRole', 'CName', 'CLocation')
     search_d.current(0)
     search_d.grid(row=0, column=2, padx=10, pady=10)
+    
     search = Button(rt, text="Sort", font=('normal', 12, 'bold'), bg="#00b9ed", fg="#ffffff", command=lambda: sort_applicants(table))
     search.grid(row=0, column=3, padx=45, pady=10, ipadx=30)
 
+    # Create widgets for the table
     scx = Scrollbar(tab, orient="horizontal")
     scy = Scrollbar(tab, orient="vertical")
-
+    
     table = ttk.Treeview(tab, columns=('JobRole', 'CName', 'CEmail', 'Location', 'CExp', 'CSkills', 'CQualification', 'Resume File'),
                          xscrollcommand=scx.set, yscrollcommand=scy.set)
     scx.pack(side="bottom", fill="x")
@@ -288,7 +320,6 @@ def app():
     table.heading("CSkills", text='Skills')
     table.heading("CQualification", text='Qualification')
     table.heading("Resume File", text='Resume File')
-
     table['show'] = 'headings'
 
     scx.config(command=table.xview)
@@ -303,11 +334,32 @@ def app():
     table.column("CQualification", width=150)
     table.column("Resume File", width=150)
 
+    # Create a Change Status button
+    change_status_btn = Button(rt, text="Change Status", font=('normal', 12, 'bold'), bg="#00b9ed", fg="#ffffff", command=lambda: change_application_status(table))
+    change_status_btn.grid(row=0, column=4, padx=10, pady=10, ipadx=30)
+
     show_applicants(table)
     table.pack(fill="both", expand=1)
-
-
-
+def askstatus():
+    root = tk.Tk()
+    root.withdraw()  
+    new_status = simpledialog.askstring("Update Application Status", "Enter the new status (Accepted/Rejected/Pending): ")
+    return new_status
+def update_application_status(application_id, new_status):
+    try:
+        mycon = sql.connect(host='localhost', user='root', passwd=user_pwd, database='jobmagnet')
+        cur = mycon.cursor()
+        
+        # Use parameterized query to prevent SQL injection
+        query = 'UPDATE jobmagnet.Application SET application_status=%s WHERE application_id=%s'
+        cur.execute(query, (new_status, application_id))
+        
+        mycon.commit()
+        mycon.close()
+        
+        messagebox.showinfo('Success', f'Application status updated to {new_status}')
+    except Exception as e:
+        messagebox.showerror('Error', f'An error occurred: {str(e)}')
 
 
 
